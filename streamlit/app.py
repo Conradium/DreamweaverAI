@@ -2,7 +2,7 @@
 # from utils.dreamweavercore import DreamCore
 
 # # Initialize the DreamCore with your API key
-# API_KEY = 'AIzaSyCEGT7dvoQG-1VvBgZIYUb4h2lLG9aW5Do'  # Replace with your actual API key
+#  Replace with your actual API key
 # dream_core = DreamCore(api_key=API_KEY)
 
 # # Streamlit app layout
