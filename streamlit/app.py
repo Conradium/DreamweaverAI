@@ -169,29 +169,29 @@ main()
 #         st.success(upload_response)
 
 
-import streamlit as st
-from langchain_google_genai import ChatGoogleGenerativeAI
+# import streamlit as st
+# from langchain_google_genai import ChatGoogleGenerativeAI
 
-st.title("🌟 Gemini Quickstart App")
+# st.title("🌟 Gemini Quickstart App")
 
-google_api_key = st.sidebar.text_input("Google API Key", type="password")
+# google_api_key = st.sidebar.text_input("Google API Key", type="password")
 
-def generate_response(input_text):
-    model = ChatGoogleGenerativeAI(
-        google_api_key=google_api_key, 
-        model="gemini-pro", 
-        temperature=0.7
-    )
-    response = model.invoke(input_text)
-    st.info(response.content)
+# def generate_response(input_text):
+#     model = ChatGoogleGenerativeAI(
+#         google_api_key=google_api_key, 
+#         model="gemini-pro", 
+#         temperature=0.7
+#     )
+#     response = model.invoke(input_text)
+#     st.info(response.content)
 
-with st.form("my_form"):
-    text = st.text_area(
-        "Enter text:",
-        "What are the three key pieces of advice for learning how to code?",
-    )
-    submitted = st.form_submit_button("Submit")
-    if not google_api_key:
-        st.warning("Please enter your Google API key!", icon="⚠")
-    if submitted and google_api_key:
-        generate_response(text)
+# with st.form("my_form"):
+#     text = st.text_area(
+#         "Enter text:",
+#         "What are the three key pieces of advice for learning how to code?",
+#     )
+#     submitted = st.form_submit_button("Submit")
+#     if not google_api_key:
+#         st.warning("Please enter your Google API key!", icon="⚠")
+#     if submitted and google_api_key:
+#         generate_response(text)
