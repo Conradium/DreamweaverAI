@@ -83,7 +83,7 @@ def main():
                         # Simulate longer loading for image generation
                         with st.spinner('Generating image...'):  # Adjust this duration as needed
                             image_url = generate_image(theme)
-                            time.sleep(5)
+                            time.sleep(10)
 
                 # Display the generated image at the top
                 if image_url:
