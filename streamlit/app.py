@@ -29,14 +29,12 @@ def generate_story(api_key, genre, theme, characters=None, roles=None, extra_inf
         st.error(f"An error occurred: {str(e)}")
         return None
 
-# Function to generate an image from Pollinations API
 def generate_image(theme):
-    # Use the Pollinations API to generate an image based on the theme
+
     return f"https://image.pollinations.ai/prompt/{theme}"
 
-# Streamlit app layout
+
 def main():
-    # Initialize session state for story if not exists
     if 'full_story' not in st.session_state:
         st.session_state.full_story = ""
     
@@ -45,13 +43,11 @@ def main():
     st.sidebar.header("API Configuration")
     api_key = st.sidebar.text_input("Enter Google Generative AI API Key", type="password")
     
-    # Initialize image URL
     image_url = None
     
     if api_key:
         st.sidebar.header("Story Parameters")
 
-        # Genre selection
         genre = st.sidebar.selectbox("Select a Genre", [
             "Fantasy", 
             "Science Fiction", 
@@ -80,19 +76,15 @@ def main():
                         st.subheader("Generated Story")
                         st.write(story)
 
-                        # Simulate longer loading for image generation
-                        with st.spinner('Generating image...'):  # Adjust this duration as needed
+                        with st.spinner('Generating image...'): 
                             image_url = generate_image(theme)
                             time.sleep(10)
-
-                # Display the generated image at the top
                 if image_url:
                     st.image(image_url, caption=f"Image for theme: {theme}", use_column_width=True)
 
             else:
                 st.warning("Please enter a theme to generate a story.")
         
-        # Continue story button (only show if there's an existing story)
         if st.session_state.full_story:
             if st.button("Continue Story"):
                 with st.spinner('Continuing the story...'):
@@ -109,8 +101,9 @@ def main():
                     if continued_story:
                         # Append the new part to the full story
                         st.session_state.full_story += "\n\n" + continued_story
-                        st.subheader("Updated Story")
+                        st.subheader("Continued Story")
                         st.write(st.session_state.full_story)
+                        st.image(image_url, caption=f"Image for theme: {theme}", use_column_width=True)
 
     else:
         st.info("Please enter your Google Generative AI API Key in the sidebar to get started.")
