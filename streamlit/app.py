@@ -4,6 +4,7 @@ import time
 import spacy
 import numpy as np
 import nltk
+nltk.download('punkt_tab')
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from nltk.translate.bleu_score import sentence_bleu
