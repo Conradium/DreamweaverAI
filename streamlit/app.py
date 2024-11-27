@@ -1,12 +1,103 @@
 import streamlit as st
 import google.generativeai as genai
-import time  # Import time module for sleep
+import time
+import spacy
+import numpy as np
+import nltk
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from nltk.translate.bleu_score import sentence_bleu
 
+# StoryCoherenceEvaluator class definition
+class StoryCoherenceEvaluator:
+    def __init__(self):
+        try:
+            self.nlp = spacy.load('en_core_web_md')
+            nltk.download('punkt')
+        except Exception as e:
+            print(f"Error loading NLP models: {e}")
+            raise
+
+    def semantic_coherence(self, text):
+        doc = self.nlp(text)
+        doc_vector = np.mean([token.vector for token in doc if token.has_vector], axis=0)
+
+        sentences = [sent.text for sent in doc.sents]
+        sentence_vectors = [self.nlp(sent).vector for sent in sentences]
+
+        similarities = []
+        for i in range(1, len(sentence_vectors)):
+            similarity = cosine_similarity(
+                sentence_vectors[i-1].reshape(1, -1),
+                sentence_vectors[i].reshape(1, -1)
+            )[0][0]
+            similarities.append(similarity)
+
+        return {
+            'avg_sentence_similarity': np.mean(similarities) if similarities else 0,
+            'semantic_coherence_score': np.mean(similarities) if similarities else 0
+        }
+
+    def lexical_coherence(self, text):
+        sentences = nltk.sent_tokenize(text)
+
+        # TF-IDF vectorization
+        vectorizer = TfidfVectorizer()
+        tfidf_matrix = vectorizer.fit_transform(sentences)
+
+        # Compute cosine similarities between consecutive sentences
+        similarities = []
+        for i in range(1, len(sentences)):
+            similarity = cosine_similarity(
+                tfidf_matrix[i-1],
+                tfidf_matrix[i]
+            )[0][0]
+            similarities.append(similarity)
+
+        return {
+            'lexical_similarity': np.mean(similarities) if similarities else 0,
+            'lexical_coherence_score': np.mean(similarities) if similarities else 0
+        }
+
+    def narrative_flow_evaluation(self, text):
+        sentences = nltk.sent_tokenize(text)
+
+        # finds candidates for similarity/pattern in the output
+        bleu_scores = []
+        for i in range(1, len(sentences)):
+            reference = [sentences[i-1].split()]
+            candidate = sentences[i].split()
+            bleu_score = sentence_bleu(reference, candidate)
+            bleu_scores.append(bleu_score)
+
+        return {
+            'narrative_flow_score': np.mean(bleu_scores) if bleu_scores else 0,
+            'narrative_progression_variance': np.std(bleu_scores) if bleu_scores else 0
+        }
+
+    def comprehensive_coherence_analysis(self, text):
+        semantic_analysis = self.semantic_coherence(text)
+        lexical_analysis = self.lexical_coherence(text)
+        narrative_analysis = self.narrative_flow_evaluation(text)
+
+        # scores combined with weight (reason: adjustable preference)
+        coherence_score = (
+            0.4 * semantic_analysis['semantic_coherence_score'] +
+            0.3 * lexical_analysis['lexical_coherence_score'] +
+            0.3 * narrative_analysis['narrative_flow_score']
+        )
+
+        return {
+            'overall_coherence_score': coherence_score,
+            'semantic_coherence': semantic_analysis,
+            'lexical_coherence': lexical_analysis,
+            'narrative_flow': narrative_analysis
+        }
+
+# Story generation function
 def generate_story(api_key, genre, theme, characters=None, roles=None, extra_info=None, previous_story=None):
     try:
-        # Configure the API key
         genai.configure(api_key=api_key)
-        
         model = genai.GenerativeModel("gemini-1.5-flash")
         
         if previous_story:
@@ -29,12 +120,13 @@ def generate_story(api_key, genre, theme, characters=None, roles=None, extra_inf
         st.error(f"An error occurred: {str(e)}")
         return None
 
+# Image generation function
 def generate_image(theme):
-
     return f"https://image.pollinations.ai/prompt/{theme}"
 
-
 def main():
+    evaluator = StoryCoherenceEvaluator()
+    
     if 'full_story' not in st.session_state:
         st.session_state.full_story = ""
     
@@ -82,6 +174,19 @@ def main():
                 if image_url:
                     st.image(image_url, caption=f"Image for theme: {theme}", use_column_width=True)
 
+                # Evaluate the story
+                evaluation_results = evaluator.comprehensive_coherence_analysis(st.session_state.full_story)
+                st.sidebar.header("Story Evaluations")
+                st.sidebar.write(f"Overall Coherence Score: {evaluation_results['overall_coherence_score']:.2f}")
+                st.sidebar.write(f"Semantic Coherence Score: {evaluation_results['semantic_coherence']['semantic_coherence_score']:.2f}")
+                st.sidebar.write(f"Lexical Coherence Score: {evaluation_results['lexical_coherence']['lexical_coherence_score']:.2f}")
+                st.sidebar.write(f"Narrative Flow Score: {evaluation_results['narrative_flow']['narrative_flow_score']:.2f}")
+
+                # Button to generate another story
+                if st.sidebar.button("Generate Another Story"):
+                    st.session_state.full_story = ""
+                    st.experimental_rerun()
+
             else:
                 st.warning("Please enter a theme to generate a story.")
         
@@ -99,7 +204,6 @@ def main():
                     )
                     
                     if continued_story:
-                        # Append the new part to the full story
                         st.session_state.full_story += "\n\n" + continued_story
                         st.subheader("Continued Story")
                         st.write(st.session_state.full_story)
