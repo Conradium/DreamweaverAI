@@ -38,7 +38,7 @@ streamlit run streamlit/app.py
 
 ### Contributing
 
-We welcome contributions to IPO Lens! Please see the `CONTRIBUTING.md` file for guidelines on submitting pull requests.
+We welcome contributions to this repo! Please see the `CONTRIBUTING.md` file for guidelines on submitting pull requests.
 
 ### License
 
